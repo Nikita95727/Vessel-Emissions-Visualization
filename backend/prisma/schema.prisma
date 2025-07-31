@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Vessel {
+  id          Int      @id @default(autoincrement())
+  name        String
+  imoNo       Int      @unique @map("imo_no")
+  vesselType  Int      @map("vessel_type")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  emissions DailyEmission[]
+  deviations VesselDeviation[]
+
+  @@map("vessels")
+}
+
+model DailyEmission {
+  id          Int      @id @default(autoincrement())
+  eid         Int      @unique
+  vesselId    Int      @map("vessel_id")
+  logId       BigInt   @map("log_id")
+  fromUtc     DateTime @map("from_utc")
+  toUtc       DateTime @map("to_utc")
+  met2wco2    Decimal  @db.Decimal(10, 4)
+  aet2wco2    Decimal  @db.Decimal(10, 4)
+  bot2wco2    Decimal  @db.Decimal(10, 4)
+  vrt2wco2    Decimal  @db.Decimal(10, 4)
+  totT2wco2   Decimal  @db.Decimal(10, 4)
+  mew2wco2e   Decimal  @db.Decimal(10, 4)
+  aew2wco2e   Decimal  @db.Decimal(10, 4)
+  bow2wco2e   Decimal  @db.Decimal(10, 4)
+  vrw2wco2e   Decimal  @db.Decimal(10, 4)
+  totW2wco2   Decimal  @db.Decimal(10, 4)
+  mesox       Decimal  @db.Decimal(10, 4)
+  aesox       Decimal  @db.Decimal(10, 4)
+  bosox       Decimal  @db.Decimal(10, 4)
+  vrsox       Decimal  @db.Decimal(10, 4)
+  totSox      Decimal  @db.Decimal(10, 4)
+  menox       Decimal  @db.Decimal(10, 4)
+  aenox       Decimal  @db.Decimal(10, 4)
+  bonox       Decimal  @db.Decimal(10, 4)
+  vrnox       Decimal  @db.Decimal(10, 4)
+  totNox      Decimal  @db.Decimal(10, 4)
+  mepm        Decimal  @db.Decimal(10, 4)
+  aepm        Decimal  @db.Decimal(10, 4)
+  bopm        Decimal  @db.Decimal(10, 4)
+  vrpm        Decimal  @db.Decimal(10, 4)
+  totPm       Decimal  @db.Decimal(10, 4)
+  mech4       Decimal  @db.Decimal(10, 4)
+  aech4       Decimal  @db.Decimal(10, 4)
+  boch4       Decimal  @db.Decimal(10, 4)
+  vrch4       Decimal  @db.Decimal(10, 4)
+  totCh4      Decimal  @db.Decimal(10, 4)
+  men2o       Decimal  @db.Decimal(10, 4)
+  aen2o       Decimal  @db.Decimal(10, 4)
+  bon2o       Decimal  @db.Decimal(10, 4)
+  vrn2o       Decimal  @db.Decimal(10, 4)
+  totN2o      Decimal  @db.Decimal(10, 4)
+  mehfc       Decimal  @db.Decimal(10, 4)
+  aehfc       Decimal  @db.Decimal(10, 4)
+  bohfc       Decimal  @db.Decimal(10, 4)
+  vrhfc       Decimal  @db.Decimal(10, 4)
+  totHfc      Decimal  @db.Decimal(10, 4)
+  mesf6       Decimal  @db.Decimal(10, 4)
+  aesf6       Decimal  @db.Decimal(10, 4)
+  bosf6       Decimal  @db.Decimal(10, 4)
+  vrsf6       Decimal  @db.Decimal(10, 4)
+  totSf6      Decimal  @db.Decimal(10, 4)
+  mepfc       Decimal  @db.Decimal(10, 4)
+  aepfc       Decimal  @db.Decimal(10, 4)
+  bopfc       Decimal  @db.Decimal(10, 4)
+  vrpfc       Decimal  @db.Decimal(10, 4)
+  totPfc      Decimal  @db.Decimal(10, 4)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  vessel Vessel @relation(fields: [vesselId], references: [id])
+
+  @@map("daily_emissions")
+}
+
+model PPSCCReferenceLine {
+  id           Int      @id @default(autoincrement()) @map("row_id")
+  category     String
+  vesselTypeId Int      @map("vessel_type_id")
+  size         String
+  traj         String
+  a            Decimal  @db.Decimal(30, 12)
+  b            Decimal  @db.Decimal(30, 12)
+  c            Decimal  @db.Decimal(30, 12)
+  d            Decimal  @db.Decimal(30, 12)
+  e            Decimal  @db.Decimal(30, 12)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("pp_scc_reference_lines")
+}
+
+model VesselDeviation {
+  id           Int      @id @default(autoincrement())
+  vesselId     Int      @map("vessel_id")
+  quarter      String   // Format: "2024-Q1", "2024-Q2", etc.
+  year         Int
+  quarterEnd   DateTime @map("quarter_end")
+  actualEmission Decimal @db.Decimal(10, 4) @map("actual_emission")
+  baselineEmission Decimal @db.Decimal(10, 4) @map("baseline_emission")
+  deviationPercentage Decimal @db.Decimal(10, 4) @map("deviation_percentage")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  vessel Vessel @relation(fields: [vesselId], references: [id])
+
+  @@unique([vesselId, quarter])
+  @@map("vessel_deviations")
+} 
